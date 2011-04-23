@@ -7,6 +7,7 @@ $:.unshift(File.dirname(__FILE__)) unless
 
 require 'rubygems'
 require 'httparty'
+require 'i18n'
 
 module YandexInflect
   # Число доступных вариантов склонений
@@ -74,4 +75,57 @@ module YandexInflect
     def self.cache_store(word, value)
       @@cache[word.to_s] = value
     end
+end
+
+######
+# I18n.i('хуй', 'рд')
+# i('хуй', 'рд')
+
+if I18n.locale == :ru
+  defined?(Inflection) or raise 'You should run "rails g yandex_inflect" (or "script/generate yandex_inflect") and rake db:migrate before using this version of yandex_inflect'
+  YandexInflect.instance_eval do
+    self::CASES = %w{им ро да ви тв пр}
+    
+    def store_inflections(word, inflections)
+      inflections = ActiveSupport::JSON.encode(inflections)
+      Inflection.create!(:original_word => word, :inflected_variants => inflections)
+    end
+    
+    def get_stored_inflections(word, no_cache = false)
+      inflections = []
+      
+      unless no_cache
+        result = cache_lookup(word)
+        return result if result
+      end
+      
+      result = Inflection.find_by_original_word(word)
+      unless result.nil?
+        inflections = ActiveSupport::JSON.decode(result.inflected_variants)
+      else
+        inflections = inflections(word)
+        store_inflections(word, inflections)
+      end
+      
+      inflections
+    end
+  end
+  
+  I18n.instance_eval do
+    def inflect(word, kase)
+      kase = YandexInflect::CASES.include?(kase) ? YandexInflect::CASES.find_index(kase) : 0
+      inflections = YandexInflect.get_stored_inflections(word)
+      return inflections[kase]
+    end
+  end
+  
+  if defined?(ActionController::Translation) 
+    ActionController::Translation.instance_eval do
+      def inflect(*args)
+        I18n.inflect(*args)
+      end
+      
+      alias :i :inflect
+    end
+  end
 end

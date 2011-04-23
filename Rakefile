@@ -53,3 +53,8 @@ task :make_spec do
     file.puts spec.to_ruby
   end
 end
+
+desc "run test case"
+task :test do
+  sh %{ruby test.rb}
+end
