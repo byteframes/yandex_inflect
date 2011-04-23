@@ -82,7 +82,6 @@ end
 # i('хуй', 'рд')
 
 if I18n.locale == :ru
-  defined?(Inflection) or raise 'You should run "rails g yandex_inflect" (or "script/generate yandex_inflect") and rake db:migrate before using this version of yandex_inflect'
   YandexInflect.instance_eval do
     self::CASES = %w{им ро да ви тв пр}
     
