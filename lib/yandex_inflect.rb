@@ -134,7 +134,7 @@ else
       raise 'You should have russian locale yo use this version of yandex_inflect'
     end
     
-    alias :store_inflections :i
-    alias :get_stored_inflections :i
+    alias :store_inflections :no_locale
+    alias :get_stored_inflections :no_locale
   end
 end
