@@ -128,4 +128,13 @@ if I18n.locale == :ru
       alias :i :inflect
     end
   end
+else
+  YandexInflect.instance_eval do
+    def no_locale
+      raise 'You should have russian locale yo use this version of yandex_inflect'
+    end
+    
+    alias :store_inflections :i
+    alias :get_stored_inflections :i
+  end
 end
